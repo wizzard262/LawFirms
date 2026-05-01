@@ -63,6 +63,11 @@ public class LawFirmsController : ControllerBase
                 CreatedAt = f.Date.Past(1)
             });
 
-        return [.. lawFirmFaker.Generate(50)];
+        var lawFirms = lawFirmFaker.Generate(50).ToArray();
+
+        // Use a 'with' expression to produce a new record with a specific Id (respects init-only semantics)
+        lawFirms[0] = lawFirms[0] with { Id = Guid.Parse("689b46a1-e886-4f6e-98a6-cbb53232a2e3") };
+
+        return lawFirms;
     }
 }
