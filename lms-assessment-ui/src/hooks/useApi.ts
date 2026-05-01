@@ -5,7 +5,10 @@ import type { CreateLawFirmRequest, LawFirm } from "~/types/law-firm-types";
 export type IApi = ReturnType<typeof useApi>;
 
 export default function useApi() {
-  const apiBaseAddress = "https://localhost:7113";
+
+  //const apiBaseAddress = "https://localhost:7113";
+  //const apiBaseAddress = "https://lawfirmapi-gdage3hffjgugkeh.uksouth-01.azurewebsites.net";
+  const apiBaseAddress = import.meta.env.VITE_API_URL;
 
   const config = {
     headers: {
