@@ -3,7 +3,7 @@ using LMS.Assessment.Api.Abstractions;
 
 namespace LMS.Assessment.Api.Infrastructure;
 
-public class InMemoryRepository<T> : IInMemoryRepository<T> where T : IEntity
+public class InMemoryRepository<T> where T : IEntity
 {
     private readonly ConcurrentDictionary<Guid, T> _store = new();
 
@@ -15,58 +15,17 @@ public class InMemoryRepository<T> : IInMemoryRepository<T> where T : IEntity
         return entity;
     }
 
-    public async Task<PaginatedList<T>> GetAllAsync(int pageNumber = 1, int pageSize = 20, string sortOrder = "asc", string sortBy = "createdAt")
+    public async Task<PaginatedList<T>> GetAllAsync(int pageNumber = 1, int pageSize = 20)
     {
-        if (sortOrder != "asc" && sortOrder != "desc")
-        {
-            sortOrder = "asc";
-        }
-
         if (pageNumber < 1) throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be at least 1.");
         if (pageSize < 1) throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be at least 1.");
 
         var all = _store.Values.ToList();
 
-        var items = new List<T>();
-
-        if (sortBy == "id")
-        {
-            if (sortOrder == "asc")
-            {
-                items = all
-                    .OrderBy(x => x.Id)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-            }
-            else
-            {
-                items = all
-                  .OrderByDescending(x => x.Id)
-                  .Skip((pageNumber - 1) * pageSize)
-                  .Take(pageSize)
-                  .ToList();
-            }
-        }
-        else
-        {
-            if (sortOrder == "asc")
-            {
-                items = all
-                    .OrderBy(x => x.CreatedAt)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-            }
-            else
-            {
-                items = all
-                  .OrderByDescending(x => x.CreatedAt)
-                  .Skip((pageNumber - 1) * pageSize)
-                  .Take(pageSize)
-                  .ToList();
-            }
-        }
+        var items = all
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
 
         await SimulateDbOperation();
         return new PaginatedList<T>(items, all.Count, pageNumber, pageSize);
@@ -76,17 +35,6 @@ public class InMemoryRepository<T> : IInMemoryRepository<T> where T : IEntity
     {
         if (!_store.TryAdd(entity.Id, entity))
             throw new InvalidOperationException($"An entity with id '{entity.Id}' already exists.");
-
-        await SimulateDbOperation();
-        return entity;
-    }
-
-    public async Task<T> UpdateAsync(T entity)
-    {
-        if (!_store.ContainsKey(entity.Id))
-            throw new KeyNotFoundException($"No entity with id '{entity.Id}' was found.");
-
-        _store[entity.Id] = entity;
 
         await SimulateDbOperation();
         return entity;

@@ -2,7 +2,6 @@ using LMS.Assessment.Api.Abstractions;
 using LMS.Assessment.Api.Controllers;
 using LMS.Assessment.Api.Dtos;
 using LMS.Assessment.Api.Entities;
-using LMS.Assessment.Api.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,8 +19,7 @@ public class LawFirmsControllerTests
 
     private static async Task<LawFirmsController> CreateSut(params LawFirm[] seedLawFirmData)
     {
-        InMemoryRepository<LawFirm> repo = new InMemoryRepository<LawFirm>();
-        var controller = new LawFirmsController(repo, seedLawFirmData)
+        var controller = new LawFirmsController(seedLawFirmData)
         {
             ControllerContext = new ControllerContext()
         };
@@ -118,58 +116,6 @@ public class LawFirmsControllerTests
         Assert.Equal(nameof(sut.GetById), created.ActionName);
         var createdFirm = Assert.IsType<LawFirm>(created.Value);
         Assert.Equal(createdFirm.Id, created.RouteValues!["id"]);
-    }
-
-    #endregion
-
-    #region Update
-
-    [Fact]
-    public async Task Update_IdMismatch_ReturnsBadRequest()
-    {
-        // Arrange
-        var firm = MakeLawFirm();
-        var sut = await CreateSut(firm);
-        var request = new UpdateLawFirmRequest(firm.Id, firm.Name, firm.Address, firm.PhoneNumber, firm.Email);
-
-        // Act
-        var result = await sut.Update(Guid.NewGuid(), request);
-
-        // Assert
-        Assert.IsType<BadRequestObjectResult>(result);
-    }
-
-    [Fact]
-    public async Task Update_ExistingEntity_ReturnsOkWithUpdatedEntity()
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        var original = MakeLawFirm(id);
-        var sut = await CreateSut(original);
-        var request = new UpdateLawFirmRequest(id, "Updated Law", original.Address, original.PhoneNumber, original.Email);
-
-        // Act
-        var result = await sut.Update(id, request);
-
-        // Assert
-        var ok = Assert.IsType<OkObjectResult>(result);
-        var updatedFirm = Assert.IsType<LawFirm>(ok.Value);
-        Assert.Equal("Updated Law", updatedFirm.Name);
-    }
-
-    [Fact]
-    public async Task Update_MissingEntity_ReturnsNotFound()
-    {
-        // Arrange
-        var firm = MakeLawFirm();
-        var sut = await CreateSut();
-        var request = new UpdateLawFirmRequest(firm.Id, firm.Name, firm.Address, firm.PhoneNumber, firm.Email);
-
-        // Act
-        var result = await sut.Update(firm.Id, request);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result);
     }
 
     #endregion

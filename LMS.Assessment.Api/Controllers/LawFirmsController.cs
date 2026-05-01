@@ -11,11 +11,11 @@ namespace LMS.Assessment.Api.Controllers;
 [Route("[controller]")]
 public class LawFirmsController : ControllerBase
 {
-    private readonly IInMemoryRepository<LawFirm> _repository;
+    private readonly InMemoryRepository<LawFirm> _repository;
 
-    public LawFirmsController(IInMemoryRepository<LawFirm> repository, LawFirm[]? seedLawFirmData = null)
+    public LawFirmsController(LawFirm[]? seedLawFirmData = null)
     {
-        _repository = repository;
+        _repository = new InMemoryRepository<LawFirm>();
         var lawFirmsToSeed = seedLawFirmData ?? GenerateFakeLawFirms();
 
         foreach (var lawFirm in lawFirmsToSeed)
@@ -25,9 +25,9 @@ public class LawFirmsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, [FromQuery] string sortOrder = "asc", [FromQuery] string sortBy = "createdAt")
+    public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
     {
-        var result = await _repository.GetAllAsync(pageNumber, pageSize, sortOrder, sortBy);
+        var result = await _repository.GetAllAsync(pageNumber, pageSize);
         return Ok(result);
     }
 
@@ -47,28 +47,6 @@ public class LawFirmsController : ControllerBase
         var entity = lawFirm.ToEntity(userId);
         var created = await _repository.CreateAsync(entity);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, UpdateLawFirmRequest lawFirm)
-    {
-        if (id != lawFirm.Id)
-            return BadRequest("Id in the URL does not match the Id in the body.");
-
-        if (Request.GetUserId() is not Guid userId)
-            return Unauthorized("User ID is missing from the request.");
-
-        var entity = lawFirm.ToEntity(userId);
-
-        try
-        {
-            var updated = await _repository.UpdateAsync(entity);
-            return Ok(updated);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
     }
 
     private static LawFirm[] GenerateFakeLawFirms()

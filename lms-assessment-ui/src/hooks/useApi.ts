@@ -17,10 +17,8 @@ export default function useApi() {
     getLawFirms: async (pageNumber: number, pageSize: number) => {
       const url =
         `${apiBaseAddress}/lawfirms` +
-        `?pageNumber=${pageNumber + 1}` +
-        `&pageSize=${pageSize}` + 
-        `&sortOrder=asc` +
-        `&sortBy=id`;
+        `?pageNumber=${pageNumber}` +
+        `&pageSize=${pageSize}`;
 
       const { data } = await axios.get<PaginatedList<LawFirm>>(url, config);
       return data;

@@ -14,7 +14,7 @@ import TableHead from "@mui/material/TableHead";
 import Skeleton from "@mui/material/Skeleton";
 
 export default function ListLawFirms() {
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
   const { getLawFirms } = useApi();
@@ -35,7 +35,7 @@ export default function ListLawFirms() {
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setPageSize(parseInt(event.target.value, 10));
-    setPage(0);
+    setPage(1);
   };
 
   return (
@@ -47,7 +47,6 @@ export default function ListLawFirms() {
           <Table sx={{ minWidth: 500 }}>
             <TableHead>
               <TableRow>
-                <TableCell>ID (Guid)</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell style={{ width: 160 }} align="right">
                   Phone number
@@ -72,8 +71,7 @@ export default function ListLawFirms() {
                 ))}
               {status === "success" &&
                 data.items.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell align="right">{row.id}</TableCell>
+                  <TableRow key={row.name}>
                     <TableCell scope="row">{row.name}</TableCell>
                     <TableCell align="right">{row.phoneNumber}</TableCell>
                     <TableCell align="right">{row.email}</TableCell>
