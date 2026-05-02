@@ -1,8 +1,7 @@
-﻿namespace LMS.Assessment.Api.Enums
+﻿namespace LMS.Assessment.Api.Enums;
+
+public enum SortOrder
 {
-    public enum SortOrder
-    {
-        asc = 1,
-        desc = 2
-    }
+    asc = 1,
+    desc = 2
 }

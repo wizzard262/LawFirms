@@ -1,8 +1,7 @@
-﻿namespace LMS.Assessment.Api.Enums
+﻿namespace LMS.Assessment.Api.Enums;
+
+public enum SortBy
 {
-    public enum SortBy
-    {
-        id = 1,
-        createdAt = 2
-    }
+    id = 1,
+    createdAt = 2
 }
