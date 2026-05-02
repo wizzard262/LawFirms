@@ -1,4 +1,5 @@
 using LMS.Assessment.Api.Abstractions;
+using LMS.Assessment.Api.Enums;
 using LMS.Assessment.Api.Infrastructure;
 
 namespace LMS.Assessment.Tests;
@@ -63,7 +64,7 @@ public class InMemoryRepositoryTests
         var repo = await CreateRepo();
 
         // Act
-        var result = await repo.GetAllAsync(pageNumber: 1, pageSize: 10);
+        var result = await repo.GetAllAsync(pageNumber: 1, pageSize: 10, sortOrder: SortOrder.asc, SortBy.createdAt);
 
         // Assert
         Assert.Empty(result.Items);
@@ -81,7 +82,7 @@ public class InMemoryRepositoryTests
             new TestEntity(Guid.NewGuid(), "c"));
 
         // Act
-        var result = await repo.GetAllAsync(pageNumber: 1, pageSize: 2);
+        var result = await repo.GetAllAsync(pageNumber: 1, pageSize: 2, sortOrder: SortOrder.asc, SortBy.createdAt);
 
         // Assert
         Assert.Equal(2, result.Items.Count);
@@ -99,7 +100,7 @@ public class InMemoryRepositoryTests
             new TestEntity(Guid.NewGuid(), "c"));
 
         // Act
-        var result = await repo.GetAllAsync(pageNumber: 2, pageSize: 2);
+        var result = await repo.GetAllAsync(pageNumber: 2, pageSize: 2, sortOrder: SortOrder.asc, SortBy.createdAt);
 
         // Assert
         Assert.Single(result.Items);
@@ -114,7 +115,7 @@ public class InMemoryRepositoryTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            () => repo.GetAllAsync(pageNumber: 0));
+            () => repo.GetAllAsync(pageNumber: 0, pageSize: 0, sortOrder: SortOrder.asc, SortBy.createdAt));
     }
 
     [Fact]
@@ -125,7 +126,7 @@ public class InMemoryRepositoryTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            () => repo.GetAllAsync(pageSize: 0));
+            () => repo.GetAllAsync(pageNumber: 1, pageSize: 0, sortOrder: SortOrder.asc, SortBy.createdAt));
     }
 
     #endregion
