@@ -5,7 +5,7 @@ import ListLawFirms from "./list-law-firms";
 
 function Homepage() {
   return (
-    <Container maxWidth="md">
+    <Container>
       <header>
         <h1>LMS.Assessment</h1>
       </header>

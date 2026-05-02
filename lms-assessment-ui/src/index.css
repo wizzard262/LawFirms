@@ -84,3 +84,14 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+.MuiTableCell-root.selected-sort {
+  font-weight: bold;
+  font-size: large;
+   cursor: pointer;
+}
+.MuiTableCell-root.unselected-sort {
+  font-weight: bold;
+  font-size: large;
+   cursor: pointer;
+}

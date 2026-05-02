@@ -17,12 +17,13 @@ export default function useApi() {
   };
 
   return {
-    getLawFirms: async (pageNumber: number, pageSize: number) => {
+    getLawFirms: async (pageNumber: number, pageSize: number, sortBy: string, sortOrder: string) => {
       const url =
         `${apiBaseAddress}/lawfirms` +
-        `?pageNumber=${pageNumber}` +
-        `&pageSize=${pageSize}`;
-
+        `?pageNumber=${pageNumber + 1}` +
+        `&pageSize=${pageSize}` +
+        `&sortBy=${sortBy}` +
+        `&sortOrder=${sortOrder}`;
       const { data } = await axios.get<PaginatedList<LawFirm>>(url, config);
       return data;
     },
