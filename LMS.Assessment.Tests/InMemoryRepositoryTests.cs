@@ -1,6 +1,6 @@
 using LMS.Assessment.Api.Abstractions;
 using LMS.Assessment.Api.Enums;
-using LMS.Assessment.Api.Infrastructure;
+using LMS.Assessment.Api.Repositories;
 
 namespace LMS.Assessment.Tests;
 

@@ -2,6 +2,7 @@ using LMS.Assessment.Api.Abstractions;
 using LMS.Assessment.Api.Controllers;
 using LMS.Assessment.Api.Dtos;
 using LMS.Assessment.Api.Entities;
+using LMS.Assessment.Api.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,11 +18,21 @@ public class LawFirmsControllerTests
         "acme@law.com",
         Guid.NewGuid());
 
-    private static async Task<LawFirmsController> CreateSut(params LawFirm[] seedLawFirmData)
+    private static async Task<LawFirmsController> CreateSystemUnderTest(params LawFirm[] seedLawFirmData)
     {
-        var controller = new LawFirmsController(seedLawFirmData)
+        var repo = new InMemoryRepository<LawFirm>();
+
+        foreach (var firm in seedLawFirmData)
         {
-            ControllerContext = new ControllerContext()
+            repo.CreateAsync(firm).Wait();
+        }
+
+        var controller = new LawFirmsController(repo)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            }
         };
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -36,10 +47,10 @@ public class LawFirmsControllerTests
     public async Task GetAll_EmptyStore_ReturnsOkWithEmptyPage()
     {
         // Arrange
-        var sut = await CreateSut();
+        var systemUnderTest = await CreateSystemUnderTest();
 
         // Act
-        var result = await sut.GetAll();
+        var result = await systemUnderTest.GetAll();
 
         // Assert
         var ok = Assert.IsType<OkObjectResult>(result);
@@ -52,10 +63,10 @@ public class LawFirmsControllerTests
     public async Task GetAll_WithItems_ReturnsOkWithPagedResult()
     {
         // Arrange
-        var sut = await CreateSut(MakeLawFirm(), MakeLawFirm(), MakeLawFirm());
+        var systemUnderTest = await CreateSystemUnderTest(MakeLawFirm(), MakeLawFirm(), MakeLawFirm());
 
         // Act
-        var result = await sut.GetAll(pageNumber: 1, pageSize: 2);
+        var result = await systemUnderTest.GetAll(pageNumber: 1, pageSize: 2);
 
         // Assert
         var ok = Assert.IsType<OkObjectResult>(result);
@@ -74,10 +85,10 @@ public class LawFirmsControllerTests
     {
         // Arrange
         var firm = MakeLawFirm();
-        var sut = await CreateSut(firm);
+        var systemUnderTest = await CreateSystemUnderTest(firm);
 
         // Act
-        var result = await sut.GetById(firm.Id);
+        var result = await systemUnderTest.GetById(firm.Id);
 
         // Assert
         var ok = Assert.IsType<OkObjectResult>(result);
@@ -88,10 +99,10 @@ public class LawFirmsControllerTests
     public async Task GetById_MissingId_ReturnsNotFound()
     {
         // Arrange
-        var sut = await CreateSut();
+        var systemUnderTest = await CreateSystemUnderTest();
 
         // Act
-        var result = await sut.GetById(Guid.NewGuid());
+        var result = await systemUnderTest.GetById(Guid.NewGuid());
 
         // Assert
         Assert.IsType<NotFoundResult>(result);
@@ -106,14 +117,14 @@ public class LawFirmsControllerTests
     {
         // Arrange
         var request = new CreateLawFirmRequest("Acme Law", "123 Main St", "555-1234", "acme@law.com");
-        var sut = await CreateSut();
+        var systemUnderTest = await CreateSystemUnderTest();
 
         // Act
-        var result = await sut.Create(request);
+        var result = await systemUnderTest.Create(request);
 
         // Assert
         var created = Assert.IsType<CreatedAtActionResult>(result);
-        Assert.Equal(nameof(sut.GetById), created.ActionName);
+        Assert.Equal(nameof(systemUnderTest.GetById), created.ActionName);
         var createdFirm = Assert.IsType<LawFirm>(created.Value);
         Assert.Equal(createdFirm.Id, created.RouteValues!["id"]);
     }

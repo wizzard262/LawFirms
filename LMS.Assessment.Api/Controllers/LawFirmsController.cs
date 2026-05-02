@@ -1,29 +1,17 @@
-using Bogus;
 using LMS.Assessment.Api.Dtos;
 using LMS.Assessment.Api.Entities;
 using LMS.Assessment.Api.Enums;
 using LMS.Assessment.Api.Helpers;
-using LMS.Assessment.Api.Infrastructure;
+using LMS.Assessment.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Assessment.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class LawFirmsController : ControllerBase
+public class LawFirmsController(IRepository<LawFirm> repository) : ControllerBase
 {
-    private readonly InMemoryRepository<LawFirm> _repository;
-
-    public LawFirmsController(LawFirm[]? seedLawFirmData = null)
-    {
-        _repository = new InMemoryRepository<LawFirm>();
-        var lawFirmsToSeed = seedLawFirmData ?? GenerateFakeLawFirms();
-
-        foreach (var lawFirm in lawFirmsToSeed)
-        {
-            _repository.CreateAsync(lawFirm);
-        }
-    }
+    private readonly IRepository<LawFirm> _repository = repository;
 
     [HttpGet]
     public async Task<IActionResult> GetAll(
@@ -53,27 +41,5 @@ public class LawFirmsController : ControllerBase
         var entity = lawFirm.ToEntity(userId);
         var created = await _repository.CreateAsync(entity);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-    }
-
-    private static LawFirm[] GenerateFakeLawFirms()
-    {
-        var lawFirmFaker = new Faker<LawFirm>("en_GB")
-            .CustomInstantiator(f => new LawFirm(
-                Guid.NewGuid(),
-                f.Company.CompanyName(),
-                f.Address.FullAddress(),
-                f.Phone.PhoneNumber(),
-                f.Internet.Email(),
-                Guid.NewGuid())
-            {
-                CreatedAt = f.Date.Past(1)
-            });
-
-        var lawFirms = lawFirmFaker.Generate(50).ToArray();
-
-        // Use a 'with' expression to produce a new record with a specific Id (respects init-only semantics)
-        lawFirms[0] = lawFirms[0] with { Id = Guid.Parse("689b46a1-e886-4f6e-98a6-cbb53232a2e3") };
-
-        return lawFirms;
     }
 }

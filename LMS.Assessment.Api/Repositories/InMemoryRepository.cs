@@ -1,27 +1,21 @@
 using LMS.Assessment.Api.Abstractions;
 using LMS.Assessment.Api.Enums;
-using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
 
-namespace LMS.Assessment.Api.Infrastructure;
+namespace LMS.Assessment.Api.Repositories;
 
-public class InMemoryRepository<T> where T : IEntity
+public class InMemoryRepository<T> : IRepository<T> where T : IEntity
 {
     private readonly ConcurrentDictionary<Guid, T> _store = new();
 
-    public async Task<T?> GetByIdAsync(Guid id)
-    {
-        _store.TryGetValue(id, out var entity);
-        await SimulateDbOperation();
-        return entity;
-    }
+    #region Public Methods
 
     public async Task<PaginatedList<T>> GetAllAsync(
         int pageNumber,
         int pageSize,
         SortOrder sortOrder,
         SortBy sortBy
-        )
+    )
     {
         if (pageNumber < 1)
         {
@@ -52,7 +46,14 @@ public class InMemoryRepository<T> where T : IEntity
             pageSize);
     }
 
-    public async Task<T> CreateAsync(T entity)
+    public async Task<T?> GetByIdAsync(Guid id)
+    {
+        _store.TryGetValue(id, out var entity);
+        await SimulateDbOperation();
+        return entity;
+    }
+
+    public async Task<T?> CreateAsync(T entity)
     {
         if (!_store.TryAdd(entity.Id, entity))
         {
@@ -61,6 +62,8 @@ public class InMemoryRepository<T> where T : IEntity
         await SimulateDbOperation();
         return entity;
     }
+
+    #endregion Public Methods
 
     private static async Task SimulateDbOperation()
     {
