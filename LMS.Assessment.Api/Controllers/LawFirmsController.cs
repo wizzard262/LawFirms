@@ -1,6 +1,7 @@
 using Bogus;
 using LMS.Assessment.Api.Dtos;
 using LMS.Assessment.Api.Entities;
+using LMS.Assessment.Api.Enums;
 using LMS.Assessment.Api.Helpers;
 using LMS.Assessment.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +26,14 @@ public class LawFirmsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] SortOrder sortOrder = SortOrder.asc,
+        [FromQuery] SortBy sortBy = SortBy.createdAt
+        )
     {
-        var result = await _repository.GetAllAsync(pageNumber, pageSize);
+        var result = await _repository.GetAllAsync(pageNumber, pageSize, sortOrder, sortBy);
         return Ok(result);
     }
 
