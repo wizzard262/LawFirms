@@ -6,7 +6,7 @@ import ListLawFirms from "./list-law-firms";
 function Homepage() {
   return (
     <Container>
-      <header>
+      <header style={{ textAlign: "left" }}>
         <h1>LMS.Assessment</h1>
         <ul>
           <li>Git mono-repository stored on github: <a href="https://github.com/wizzard262/LawFirms">https://github.com/wizzard262/LawFirms</a></li>
