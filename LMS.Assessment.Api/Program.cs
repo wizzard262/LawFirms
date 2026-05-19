@@ -26,7 +26,8 @@ foreach (var firm in FakeLawFirmGenerator.GenerateFakeLawFirms())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+var isDemo = true;
+if (app.Environment.IsDevelopment() || isDemo)
 {
     app.MapOpenApi();
 }
