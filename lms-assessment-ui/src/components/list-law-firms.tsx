@@ -6,7 +6,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableFooter from "@mui/material/TableFooter";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import useApi from "~/hooks/useApi";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -18,7 +17,7 @@ export default function ListLawFirms() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(5);
   const [sortBy, setSortBy] = useState("createdAt");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState("desc"); // newest first, so a firm you add shows at the top
   const { getLawFirms } = useApi();
 
   const { data, status } = useQuery({
@@ -35,57 +34,54 @@ export default function ListLawFirms() {
 
   const handleSort = (column: string) => {
     setPage(0);
-    setPageSize(pageSize);
-  if (sortBy === column) {
-    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-  } else {    
-    setSortBy(column);
-    setSortOrder("asc");
-  }
-};
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+  };
 
+  // back to the first page (pages count from 0 here), keeping the sort
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setPage(1);
+    setPage(0);
     setPageSize(parseInt(event.target.value, 10));
-    setSortBy("createdAt");
-    setSortOrder("desc");
   };
 
+  const sortHeader = (column: string, label: string) => (
+    <button
+      type="button"
+      className={sortBy === column ? "sort-button sorted" : "sort-button"}
+      onClick={() => handleSort(column)}
+      aria-label={`Sort by ${label}`}
+    >
+      {label} {sortBy === column ? (sortOrder === "asc" ? "▲" : "▼") : "↕"}
+    </button>
+  );
+
   return (
-    <section id="list-firms">
-      <h2>List of Law Firms</h2>
-      {status === "error" && <p>Error loading law firms.</p>}
+    <section id="list-firms" className="card card-wide" aria-labelledby="list-title">
+      <h2 id="list-title">Law firms</h2>
+      <p className="muted small sort-hint">Sort by ID or by when a firm was added; newest first to start with.</p>
+      {status === "error" && <p className="notice">Couldn't load the law firms. The API may be waking up: try again in a minute.</p>}
       {status !== "error" && (
-        <TableContainer component={Paper}>
-          <Table 
-            style={{ border: "2px solid #ccc" }}
-            sx={{ minWidth: 500 }}>
+        <TableContainer>
+          <Table className="firms-table" size="small" aria-labelledby="list-title">
             <TableHead>
               <TableRow>
+                <TableCell aria-sort={sortBy === "id" ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}>
+                  {sortHeader("id", "ID")}
+                </TableCell>
+                <TableCell className="nosort">Name</TableCell>
+                <TableCell className="nosort">Phone number</TableCell>
+                <TableCell className="nosort">Email</TableCell>
                 <TableCell
-                    scope="row"
-                    className={sortBy === "id" ? "selected-sort" : "unselected-sort"}
-                    onClick={() => handleSort("id")}>
-                  ID {sortBy === "id" && (sortOrder === "asc" ? "▲" : "▼")}
-                </TableCell>
-                <TableCell>
-                  Name
-                </TableCell>
-                <TableCell style={{ width: 160 }}>
-                  Phone number
-                </TableCell>
-                <TableCell style={{ width: 160 }}>
-                  Email
-                </TableCell>
-                <TableCell 
-                    style={{ width: 160 }}
-                    align="right"
-                    scope="row"
-                    className={sortBy === "createdAt" ? "selected-sort" : "unselected-sort"}
-                    onClick={() => handleSort("createdAt")}>
-                  Created At {sortBy === "createdAt" && (sortOrder === "asc" ? "▲" : "▼")}
+                  align="right"
+                  aria-sort={sortBy === "createdAt" ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
+                >
+                  {sortHeader("createdAt", "Added")}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -94,19 +90,24 @@ export default function ListLawFirms() {
                 // render rows of skeletons to avoid layout shift when data loads
                 [...Array(pageSize)].map((_, index) => (
                   <TableRow key={index}>
-                    <TableCell colSpan={5} align="center">
+                    <TableCell colSpan={5} className="full">
                       <Skeleton />
                     </TableCell>
                   </TableRow>
                 ))}
+              {status === "success" && data.items.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="full muted">No law firms yet. Add one below.</TableCell>
+                </TableRow>
+              )}
               {status === "success" &&
                 data.items.map((row) => (
-                  <TableRow key={row.name}>
-                    <TableCell scope="row" style={{ whiteSpace: "nowrap" }}>{row.id}</TableCell>
-                    <TableCell scope="row">{row.name}</TableCell>
-                    <TableCell>{row.phoneNumber}</TableCell>
-                    <TableCell>{row.email}</TableCell>
-                    <TableCell>
+                  <TableRow key={row.id}>
+                    <TableCell data-label="ID" className="mono">{row.id}</TableCell>
+                    <TableCell data-label="Name">{row.name}</TableCell>
+                    <TableCell data-label="Phone">{row.phoneNumber}</TableCell>
+                    <TableCell data-label="Email">{row.email}</TableCell>
+                    <TableCell data-label="Added" align="right" style={{ whiteSpace: "nowrap" }}>
                       {new Date(row.createdAt).toLocaleString("en-GB", {
                         dateStyle: "short",
                         timeStyle: "short",

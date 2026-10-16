@@ -6,11 +6,18 @@ import useCreateLawFirm from "~/hooks/useCreateLawFirm";
 import type { CreateLawFirmRequest } from "~/types/law-firm-types";
 
 const validationSchema = yup.object({
-  name: yup.string().trim().required().min(1).max(50),
-  address: yup.string().trim().required().min(1).max(100),
-  phoneNumber: yup.string().trim().required(),
-  email: yup.string().trim().required().email(),
+  name: yup.string().label("Name").trim().required().min(1).max(50),
+  address: yup.string().label("Address").trim().required().min(1).max(100),
+  phoneNumber: yup.string().label("Phone number").trim().required(),
+  email: yup.string().label("Email").trim().required().email(),
 });
+
+const fields: { name: keyof CreateLawFirmRequest; label: string; type?: string }[] = [
+  { name: "name", label: "Name" },
+  { name: "address", label: "Address" },
+  { name: "phoneNumber", label: "Phone number", type: "tel" },
+  { name: "email", label: "Email", type: "email" },
+];
 
 export default function CreateLawFirmForm() {
   const { createLawFirmAsync, isSubmitting } = useCreateLawFirm();
@@ -31,71 +38,33 @@ export default function CreateLawFirmForm() {
   });
 
   return (
-    <section id="add-firm">
-      <h2>Add Law Firm</h2>
-      <TextField
-        fullWidth
-        id="name"
-        name="name"
-        label="Name"
-        value={form.values.name}
-        onChange={form.handleChange}
-        onBlur={form.handleBlur}
-        error={form.touched.name && Boolean(form.errors.name)}
-        helperText={form.touched.name && form.errors.name}
-        disabled={isSubmitting}
-        sx={{ marginBottom: 2 }}
-      />
-      <TextField
-        fullWidth
-        id="address"
-        name="address"
-        label="Address"
-        value={form.values.address}
-        onChange={form.handleChange}
-        onBlur={form.handleBlur}
-        error={form.touched.address && Boolean(form.errors.address)}
-        helperText={form.touched.address && form.errors.address}
-        disabled={isSubmitting}
-        sx={{ marginBottom: 2 }}
-      />
-      <TextField
-        fullWidth
-        id="phoneNumber"
-        name="phoneNumber"
-        label="Phone Number"
-        value={form.values.phoneNumber}
-        onChange={form.handleChange}
-        onBlur={form.handleBlur}
-        error={form.touched.phoneNumber && Boolean(form.errors.phoneNumber)}
-        helperText={form.touched.phoneNumber && form.errors.phoneNumber}
-        disabled={isSubmitting}
-        sx={{ marginBottom: 2 }}
-      />
-      <TextField
-        fullWidth
-        id="email"
-        name="email"
-        label="Email"
-        value={form.values.email}
-        onChange={form.handleChange}
-        onBlur={form.handleBlur}
-        error={form.touched.email && Boolean(form.errors.email)}
-        helperText={form.touched.email && form.errors.email}
-        disabled={isSubmitting}
-        sx={{ marginBottom: 2 }}
-      />
-      <Button
-        color="primary"
-        variant="contained"
-        fullWidth
-        type="submit"
-        onClick={() => form.submitForm()}
-        disabled={isSubmitting}
-        sx={{ marginBottom: 2 }}
-      >
-        Create Law Firm
-      </Button>
+    <section id="add-firm" className="card" aria-labelledby="add-title">
+      <h2 id="add-title">Add a law firm</h2>
+      <p className="muted small">Checked in the browser with Formik and Yup, then sent to the API.</p>
+      <form onSubmit={form.handleSubmit} noValidate>
+        <div className="form-grid">
+          {fields.map((field) => (
+            <TextField
+              key={field.name}
+              fullWidth
+              size="small"
+              id={field.name}
+              name={field.name}
+              label={field.label}
+              type={field.type}
+              value={form.values[field.name]}
+              onChange={form.handleChange}
+              onBlur={form.handleBlur}
+              error={form.touched[field.name] && Boolean(form.errors[field.name])}
+              helperText={form.touched[field.name] && form.errors[field.name]}
+              disabled={isSubmitting}
+            />
+          ))}
+        </div>
+        <Button color="primary" variant="contained" type="submit" disabled={isSubmitting} disableElevation>
+          {isSubmitting ? "Adding..." : "Add law firm"}
+        </Button>
+      </form>
     </section>
   );
 }
